@@ -1,0 +1,29 @@
+name: Friday Posh Sales Digest
+
+on:
+  schedule:
+    # 21:00 UTC Friday = 5:00 PM EDT (summer). Winter (EST) this fires at 4 PM;
+    # change to "0 22 * * 5" in November if you want it to stay at 5 PM.
+    - cron: "0 21 * * 5"
+  workflow_dispatch: {} # manual "Run workflow" button for testing
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm install googleapis
+
+      - name: Run weekly digest
+        env:
+          GOOGLE_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
+          GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: node scripts/weeklyDigest.mjs
